@@ -40,9 +40,9 @@ resource "aws_iam_role" "execution" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect    = "Allow"
       Principal = { Service = "ecs-tasks.amazonaws.com" }
-      Action = "sts:AssumeRole"
+      Action    = "sts:AssumeRole"
     }]
   })
 }
@@ -57,9 +57,9 @@ resource "aws_iam_role" "task" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect    = "Allow"
       Principal = { Service = "ecs-tasks.amazonaws.com" }
-      Action = "sts:AssumeRole"
+      Action    = "sts:AssumeRole"
     }]
   })
 }
@@ -85,9 +85,9 @@ resource "aws_ecs_task_definition" "api" {
   execution_role_arn       = aws_iam_role.execution.arn
   task_role_arn            = aws_iam_role.task.arn
   container_definitions = jsonencode([{
-    name      = "api"
-    image     = "${aws_ecr_repository.api.repository_url}:${var.image_tag}"
-    essential = true
+    name         = "api"
+    image        = "${aws_ecr_repository.api.repository_url}:${var.image_tag}"
+    essential    = true
     portMappings = [{ containerPort = 8000, protocol = "tcp" }]
     environment = [
       { name = "DEPLOYLEDGER_ENVIRONMENT", value = var.environment },
@@ -98,19 +98,19 @@ resource "aws_ecs_task_definition" "api" {
       { name = "DEPLOYLEDGER_API_KEY", valueFrom = var.api_key_secret_arn },
       { name = "DEPLOYLEDGER_WEBHOOK_SECRET", valueFrom = var.webhook_secret_arn }
     ]
-    healthCheck = { command = ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live')\""], interval = 30, timeout = 5, retries = 3 }
-    logConfiguration = { logDriver = "awslogs", options = { "awslogs-group" = aws_cloudwatch_log_group.api.name, "awslogs-region" = var.aws_region, "awslogs-stream-prefix" = "api" } }
+    healthCheck            = { command = ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live')\""], interval = 30, timeout = 5, retries = 3 }
+    logConfiguration       = { logDriver = "awslogs", options = { "awslogs-group" = aws_cloudwatch_log_group.api.name, "awslogs-region" = var.aws_region, "awslogs-stream-prefix" = "api" } }
     readonlyRootFilesystem = true
-    user = "10001"
+    user                   = "10001"
   }])
 }
 
 resource "aws_ecs_service" "api" {
-  name            = "deployledger-${var.environment}-api"
-  cluster         = aws_ecs_cluster.this.id
-  task_definition = aws_ecs_task_definition.api.arn
-  desired_count   = 2
-  launch_type     = "FARGATE"
+  name                               = "deployledger-${var.environment}-api"
+  cluster                            = aws_ecs_cluster.this.id
+  task_definition                    = aws_ecs_task_definition.api.arn
+  desired_count                      = 2
+  launch_type                        = "FARGATE"
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent         = 200
   network_configuration {
