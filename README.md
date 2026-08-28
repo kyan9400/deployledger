@@ -4,6 +4,8 @@
 [![Release](https://img.shields.io/github/v/release/kyan9400/deployledger?display_name=tag)](https://github.com/kyan9400/deployledger/releases)
 [![License](https://img.shields.io/badge/license-MIT-0f766e.svg)](LICENSE)
 
+Live dashboard: [deployledger.vercel.app](https://deployledger.vercel.app) · API and infrastructure are available for local or self-hosted deployment.
+
 DeployLedger is a self-hosted release-operations control plane for teams that want one calm, auditable view of delivery speed and change stability. It ingests deployment events, computes DORA metrics, exposes Prometheus health signals, and gives engineers a small dashboard for deciding whether the next release is safe to ship.
 
 The project is deliberately shaped like a production service: async FastAPI + SQLAlchemy, a responsive React dashboard, signed GitHub webhooks, idempotent writes, a tamper-evident audit chain, container hardening, Kubernetes manifests, Terraform infrastructure, and CI that tests code and scans images.
@@ -88,4 +90,3 @@ An importable OpenAPI sketch lives in [`docs/openapi.yaml`](docs/openapi.yaml). 
 ## License
 
 MIT. See [LICENSE](LICENSE).
-
