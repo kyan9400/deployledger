@@ -22,7 +22,7 @@ npm-debug.log*
 .DS_Store
 .idea/
 .vscode/
-terraform/.terraform/
-terraform.tfstate*
+**/.terraform/
+**/terraform.tfstate*
 crash.log
 work-*.yaml
