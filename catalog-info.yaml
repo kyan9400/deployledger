@@ -1,0 +1,31 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: deployledger
+  description: Release operations control plane for deployment telemetry and delivery metrics.
+  annotations:
+    github.com/project-slug: kyan9400/deployledger
+    backstage.io/techdocs-ref: dir:.
+    deployledger.dev/dora-metrics: change-lead-time,deployment-frequency,failed-deployment-recovery,change-fail-rate,deployment-rework
+spec:
+  type: service
+  lifecycle: experimental
+  owner: platform-engineering
+  system: delivery-platform
+  providesApis:
+    - deployledger-http-api
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: deployledger-http-api
+  description: Deployment ingestion, DORA metrics, health, and audit endpoints.
+spec:
+  type: openapi
+  lifecycle: experimental
+  owner: platform-engineering
+  system: delivery-platform
+  definition:
+    $text: ./docs/openapi.yaml
+

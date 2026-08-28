@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: deployledger
+resources:
+  - ../../base
+patches:
+  - target:
+      kind: Deployment
+      name: deployledger-api
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: ghcr.io/kyan9400/deployledger-api:main
+  - target:
+      kind: Deployment
+      name: deployledger-web
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: ghcr.io/kyan9400/deployledger-web:main
+

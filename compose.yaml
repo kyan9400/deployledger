@@ -1,0 +1,54 @@
+name: deployledger
+
+services:
+  postgres:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-deployledger}
+      POSTGRES_USER: ${POSTGRES_USER:-deployledger}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-dev-password}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - deployledger-postgres:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./services/api
+    environment:
+      DEPLOYLEDGER_ENVIRONMENT: ${DEPLOYLEDGER_ENVIRONMENT:-local}
+      DEPLOYLEDGER_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-deployledger}:${POSTGRES_PASSWORD:-local-dev-password}@postgres:5432/${POSTGRES_DB:-deployledger}
+      DEPLOYLEDGER_API_KEY: ${DEPLOYLEDGER_API_KEY:-local-dev-key}
+      DEPLOYLEDGER_WEBHOOK_SECRET: ${DEPLOYLEDGER_WEBHOOK_SECRET:-local-webhook-secret}
+      DEPLOYLEDGER_CORS_ORIGINS: http://localhost:4173
+      DEPLOYLEDGER_DEMO_SEED: ${DEPLOYLEDGER_DEMO_SEED:-true}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready')"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./apps/web
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "4173:8080"
+    restart: unless-stopped
+
+volumes:
+  deployledger-postgres:
+

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: deployledger-config
+  namespace: deployledger
+data:
+  DEPLOYLEDGER_ENVIRONMENT: production
+  DEPLOYLEDGER_CORS_ORIGINS: https://deployledger.example.com
+  DEPLOYLEDGER_DEMO_SEED: "false"
+

@@ -1,0 +1,17 @@
+name: Feature request
+description: Propose an improvement with an operational outcome.
+title: "feat: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What decision or workflow is currently difficult?
+    validations: { required: true }
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed direction
+    validations: { required: true }
+

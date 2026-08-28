@@ -1,0 +1,103 @@
+openapi: 3.1.0
+info:
+  title: DeployLedger API
+  version: 0.1.0
+  description: Deployment ledger, DORA metrics, signed webhooks, and audit history.
+servers:
+  - url: http://localhost:8000
+paths:
+  /health/live:
+    get:
+      summary: Process liveness
+      responses:
+        '200': { description: Process is alive }
+  /health/ready:
+    get:
+      summary: Database readiness
+      responses:
+        '200': { description: Database is reachable }
+        '503': { description: Database is unavailable }
+  /api/v1/services:
+    get:
+      summary: List registered services
+      responses:
+        '200':
+          description: Service catalog
+    post:
+      summary: Register a service
+      security: [{ apiKey: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/ServiceCreate' } }
+      responses:
+        '201': { description: Service created }
+        '409': { description: Slug already exists }
+  /api/v1/deployments:
+    get:
+      summary: List deployment history
+      parameters:
+        - { name: service_slug, in: query, schema: { type: string } }
+        - { name: environment, in: query, schema: { type: string, enum: [production, staging, preview] } }
+        - { name: status, in: query, schema: { type: string, enum: [running, succeeded, failed, rolled_back] } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses: { '200': { description: Deployment history } }
+    post:
+      summary: Record a deployment
+      security: [{ apiKey: [] }]
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          schema: { type: string, maxLength: 255 }
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/DeploymentCreate' } }
+      responses:
+        '201': { description: Deployment recorded }
+  /api/v1/metrics/dora:
+    get:
+      summary: Read the DORA metric window
+      parameters:
+        - { name: service_slug, in: query, schema: { type: string } }
+        - { name: window_days, in: query, schema: { type: integer, minimum: 7, maximum: 90, default: 30 } }
+      responses: { '200': { description: DORA summary and daily trend } }
+  /api/v1/webhooks/github:
+    post:
+      summary: Verify and ingest a GitHub deployment event
+      parameters:
+        - { name: X-Hub-Signature-256, in: header, required: true, schema: { type: string } }
+        - { name: X-GitHub-Event, in: header, required: true, schema: { type: string } }
+      responses:
+        '202': { description: Event accepted or ignored }
+        '401': { description: Signature invalid }
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+  schemas:
+    ServiceCreate:
+      type: object
+      required: [slug, name, owner_team, repository]
+      properties:
+        slug: { type: string, pattern: '^[a-z0-9][a-z0-9-]{1,62}$' }
+        name: { type: string, minLength: 2, maxLength: 120 }
+        owner_team: { type: string, minLength: 2, maxLength: 80 }
+        repository: { type: string, format: uri }
+    DeploymentCreate:
+      type: object
+      required: [service_slug, environment, revision, status]
+      properties:
+        service_slug: { type: string }
+        environment: { type: string, enum: [production, staging, preview] }
+        revision: { type: string, minLength: 7, maxLength: 128 }
+        status: { type: string, enum: [running, succeeded, failed, rolled_back] }
+        source: { type: string, enum: [api, github, argocd, terraform], default: api }
+        change_kind: { type: string, enum: [normal, urgent], default: normal }
+        started_at: { type: string, format: date-time }
+        finished_at: { type: string, format: date-time, nullable: true }
+        recovered_at: { type: string, format: date-time, nullable: true }
+        lead_time_seconds: { type: number, minimum: 0, nullable: true }
+

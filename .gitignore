@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.db
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+apps/web/dist/
+*.tsbuildinfo
+npm-debug.log*
+*.log
+
+# Local tooling
+.DS_Store
+.idea/
+.vscode/
+terraform/.terraform/
+terraform.tfstate*
+crash.log
+work-*.yaml
